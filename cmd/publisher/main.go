@@ -4,19 +4,10 @@ import (
   "fmt"
   "log"
   "os"
-  "sync"
-  "time"
 
   "github.com/joho/godotenv"
   natsPkg "publisher/internal/nats"
-  pgPkg "publisher/internal/pg"
-)
-
-var (
-  insertPool []natsPkg.PipelineEvent
-  updatePool []natsPkg.PipelineEvent
-  poolMutex  sync.Mutex
-  lastAdded  = time.Now()
+  _ "publisher/internal/pg"
 )
 
 func main() {
@@ -28,6 +19,7 @@ func main() {
     natsAddr = "nats://127.0.0.1:4222"
   }
   dbURL := os.Getenv("DATABASE_URL")
+  _ = dbURL
 
   client, err := natsPkg.NewClient(natsAddr)
   if err != nil {
@@ -41,80 +33,22 @@ func main() {
     log.Fatalf("[-] Config error: %v", err)
   }
 
+  // 3. Initialize Orchestrator
   orch := natsPkg.NewOrchestrator(client, cfg)
   fmt.Printf("[+] Publisher service online. NATS: %s\n", natsAddr)
 
-  // 3. Start Scraper Cron via Orchestrator
+  // 4. Start Scraper Cron (ACTIVE)
   orch.StartCron()
 
-  // 4. Start the Background Flusher
-  go startFlusher(orch)
-
-  // 5. Listen for DB Events
-  // Note: Using subjects defined in YAML via the Orchestrator/Config
-  err = pgPkg.ListenForEvents(dbURL, cfg.Pipeline.Subjects["insert"], func(payload string) {
-    collectEvent("INSERT", payload)
-  })
-  if err != nil {
-    log.Printf("[-] DB Insert Listener error: %v", err)
+  // --- PIPELINE INACTIVE SECTION (Kept for future use) ---
+  /*
+  if dbURL != "" {
+    // Start background batching logic
+    go orch.StartFlusher()
   }
-
-  err = pgPkg.ListenForEvents(dbURL, cfg.Pipeline.Subjects["update"], func(payload string) {
-    collectEvent("UPDATE", payload)
-  })
-  if err != nil {
-    log.Printf("[-] DB Update Listener error: %v", err)
-  }
+  */
+  // ----------------------------------------------------
 
   // Keep the process alive
   select {}
 }
-
-func collectEvent(opType string, payload string) {
-  event := natsPkg.PipelineEvent{
-    ID: payload,
-  }
-
-  poolMutex.Lock()
-  defer poolMutex.Unlock()
-
-  if opType == "INSERT" {
-    insertPool = append(insertPool, event)
-  } else {
-    updatePool = append(updatePool, event)
-  }
-
-  lastAdded = time.Now()
-  log.Printf("[*] Pooled %s ID: %s (Total: %d)", opType, payload, len(insertPool)+len(updatePool))
-}
-
-func startFlusher(orch *natsPkg.Orchestrator) {
-  ticker := time.NewTicker(1 * time.Minute)
-  flushThreshold := orch.GetFlushThreshold()
-  batchLimit := orch.Config.Pipeline.BatchSize
-
-  for range ticker.C {
-    poolMutex.Lock()
-    
-    shouldForceFlush := time.Since(lastAdded) >= flushThreshold
-
-    // Flush Insert Pool
-    if len(insertPool) >= batchLimit || (len(insertPool) > 0 && shouldForceFlush) {
-      batch := insertPool
-      insertPool = nil
-      go orch.Client.PublishBatch(orch.Config.Pipeline.Subjects["insert"], batch)
-      log.Printf("[^] Flushed %d INSERTS", len(batch))
-    }
-
-    // Flush Update Pool
-    if len(updatePool) >= batchLimit || (len(updatePool) > 0 && shouldForceFlush) {
-      batch := updatePool
-      updatePool = nil
-      go orch.Client.PublishBatch(orch.Config.Pipeline.Subjects["update"], batch)
-      log.Printf("[^] Flushed %d UPDATES", len(batch))
-    }
-
-    poolMutex.Unlock()
-  }
-}
-

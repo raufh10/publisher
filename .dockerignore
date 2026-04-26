@@ -1,0 +1,54 @@
+# --- Version Control ---
+.git
+.gitignore
+.gitattributes
+
+# --- Go Build Artifacts & Dependencies ---
+bin/
+out/
+dist/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.prof
+
+# --- Local Development / Secrets ---
+.env*
+!.env.example
+*.local
+certs/
+*.pem
+*.key
+*.crt
+*.pub
+
+# --- IDE / Editor Configs ---
+.vscode/
+.idea/
+*.swp
+*.swo
+.history/
+*.sublime-project
+*.sublime-workspace
+
+# --- Documentation & Miscellaneous ---
+README.md
+CONTRIBUTING.md
+LICENSE
+docs/
+scripts/
+temp/
+testdata/
+tools/
+assets/*.sketch
+assets/*.psd
+
+# --- System & Logs ---
+*.log
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
