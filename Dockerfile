@@ -28,6 +28,7 @@ WORKDIR /app/
 
 # Copy the binary from the builder stage
 COPY --from=builder /publisher .
+COPY --from=builder /app/events.yaml .
 
 # Set the binary as the entrypoint
 ENTRYPOINT ["./publisher"]
