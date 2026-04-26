@@ -1,0 +1,25 @@
+# Logs
+logs/
+*.log
+
+# Secrets and Config
+.env*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Standard Go binary output
+bin/
+
+# Go test coverage and profiles
+*.out
+*.test
+*.prof
