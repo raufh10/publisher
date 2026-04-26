@@ -13,6 +13,7 @@ RUN go mod download
 # Copy the source code
 COPY cmd/ ./cmd/
 COPY internal/ ./internal/
+COPY events.yaml ./
 
 # Build the publisher binary
 RUN CGO_ENABLED=0 GOOS=linux go build -o /publisher ./cmd/publisher/main.go
