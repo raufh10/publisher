@@ -1,13 +1,11 @@
 package nats
 
-import "encoding/json"
-
 // EventConfig is the validation structure for the YAML
 type EventConfig struct {
   Scraper struct {
-    Cron    string         `yaml:"cron"`
-    Subject string         `yaml:"subject"`
-    Payload json.RawMessage `yaml:"payload"`
+    Cron    string `yaml:"cron"`
+    Subject string `yaml:"subject"`
+    Payload any    `yaml:"payload"`
   } `yaml:"scraper"`
 
   Pipeline struct {
