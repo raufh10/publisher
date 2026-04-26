@@ -1,11 +1,10 @@
 scraper:
   cron: "0 0 * * *"
   subject: "scraper.event"
-  payload: {
-    "pages": 5, 
-    "limit": 100, 
-    "target": "ClaudeAI,ClaudeCode,OpenAI,ChatGPT,codex,GeminiAI"
-  }
+  payload:
+    pages: 5
+    limit: 100
+    target: "ClaudeAI,ClaudeCode,OpenAI,ChatGPT,codex,GeminiAI"
 
 # pipeline:
 #   batch_size: 500
@@ -13,3 +12,4 @@ scraper:
 #   subjects:
 #     insert: "reddit_posts_inserted"
 #     update: "reddit_posts_updated"
+
