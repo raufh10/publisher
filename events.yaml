@@ -1,0 +1,11 @@
+scraper:
+  cron: "0 9 * * *"
+  subject: "scraper.event"
+  payload: {"pages": 5, "limit": 100, "target": "jualbeliindonesia"}
+
+pipeline:
+  batch_size: 500
+  flush_interval: "5m"
+  subjects:
+    insert: "reddit_posts_inserted"
+    update: "reddit_posts_updated"
