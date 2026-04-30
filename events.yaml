@@ -1,5 +1,5 @@
 scraper:
-  cron: "5 8 * * *"
+  cron: "30 8 * * *"
   subject: "scraper.event"
   payload:
     pages: 5
